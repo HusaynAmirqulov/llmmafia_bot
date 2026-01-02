@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import random
 import os
-TOKEN = os.getenv("8570677117:AAEfGznMpByLUTGu1ZCMGK-N2mGX7wwTeDo")
+TOKEN = os.getenv("DISCORD_TOKEN")
 
 players = {}
 roles = {}
