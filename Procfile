@@ -1,1 +1,1 @@
-python bot.py
+python mafia_bot.py
