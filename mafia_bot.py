@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import random
 import os
-TOKEN = os.getenv("DISCORD_TOKEN")
+TOKEN = os.getenv("BOT_TOKEN")
 
 players = {}
 roles = {}
