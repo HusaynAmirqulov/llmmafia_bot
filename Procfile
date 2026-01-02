@@ -1,1 +1,1 @@
-python mafia_bot.py
+worker: python bot.py
