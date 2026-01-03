@@ -53,21 +53,25 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         names = ", ".join(game_participants[chat_id].values())
         total = len(game_participants[chat_id])
 
-        await context.bot.edit_message_text(
-            chat_id=chat_id,
-            message_id=last_game_message[chat_id],
-            text=(
-                "Ro'yxatdan o'tish boshlandi ⚡️\n\n"
-                f"{names}\n\n"
-                f"Jami {total} ta odam."
-            ),
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton(
-                    "Qo‘shilish 🤵🏻",
-                    url=f"https://t.me/{context.bot.username}?start=game_{chat_id}"
-                )]
-            ])
-        )
+        if chat_id in last_game_message:
+            try:
+                await context.bot.edit_message_text(
+                    chat_id=chat_id,
+                    message_id=last_game_message[chat_id],
+                    text=(
+                        "Ro'yxatdan o'tish boshlandi ⚡️\n\n"
+                        f"{names}\n\n"
+                        f"Jami {total} ta odam."
+                    ),
+                    reply_markup=InlineKeyboardMarkup([
+                        [InlineKeyboardButton(
+                            "Qo‘shilish 🤵🏻",
+                            url=f"https://t.me/{context.bot.username}?start=game_{chat_id}"
+                        )]
+                    ])
+                )
+            except:
+                pass
         return
 
     # Oddiy /start
@@ -118,7 +122,7 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == "back":
         await query.message.edit_text(
             "Salom! 👋\n"
-            "Men 𝐋𝐮𝐧𝐚𝐫𝐋𝐞𝐠𝐚𝐜𝐲 𝐌𝐚𝐟𝐢𝐚 guruhining 🤵🏻 Mafia o'yini botiman.",
+            "Men 𝐋𝐮𝐧𝐚𝐫𝐋𝐞𝐠𝐚𝐜𝐘 𝐌𝐚𝐟𝐢𝐚 guruhining 🤵🏻 Mafia o'yini botiman.",
             reply_markup=main_menu(context.bot.username)
         )
 
@@ -126,6 +130,12 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ===== /newgame =====
 async def newgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
+
+    # eski buyruqni o'chiramiz
+    try:
+        await update.message.delete()
+    except:
+        pass
 
     if chat_id not in bot_ready_chats:
         if not await check_bot_permissions(chat_id, context):
@@ -156,10 +166,48 @@ async def newgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     last_game_message[chat_id] = msg.message_id
 
 
+# ===== /leave =====
+async def leave(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+    user = update.effective_user
+
+    if chat_id not in game_participants or user.id not in game_participants[chat_id]:
+        await update.message.reply_text("❗ Siz allaqachon o‘yinda emassiz")
+        return
+
+    del game_participants[chat_id][user.id]
+
+    names = ", ".join(game_participants[chat_id].values())
+    total = len(game_participants[chat_id])
+
+    if chat_id in last_game_message:
+        try:
+            await context.bot.edit_message_text(
+                chat_id=chat_id,
+                message_id=last_game_message[chat_id],
+                text=(
+                    "Ro'yxatdan o'tish boshlandi ⚡️\n\n"
+                    f"{names}\n\n"
+                    f"Jami {total} ta odam."
+                ),
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton(
+                        "Qo‘shilish 🤵🏻",
+                        url=f"https://t.me/{context.bot.username}?start=game_{chat_id}"
+                    )]
+                ])
+            )
+        except:
+            pass
+
+    await update.message.delete()
+
+
 print("🤖 LunarLegacy Mafia bot ishga tushdi")
 
 app = ApplicationBuilder().token(TOKEN).build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("newgame", newgame))
+app.add_handler(CommandHandler("leave", leave))
 app.add_handler(CallbackQueryHandler(buttons))
 app.run_polling()
