@@ -60,7 +60,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
-
 # Tugmalar bosilganda ishlaydi
 async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -83,11 +82,12 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "3️⃣ Kun davomida ovoz beriladi\n"
             "4️⃣ Mafia yoki Civil g‘alaba qozonadi"
         )
+
     elif query.data == "ready":
-    await query.message.reply_text(
-        "✅ Bot guruhda ishlashga tayyor!\n"
-        "O‘yinni boshlash uchun /newgame buyrug‘idan foydalaning."
-    )
+        await query.message.reply_text(
+            "✅ Bot guruhda ishlashga tayyor!\n"
+            "O‘yinni boshlash uchun /newgame buyrug‘idan foydalaning."
+        )
 
 print("🤖 LunarLegacy Mafia bot ishga tushdi")
 
