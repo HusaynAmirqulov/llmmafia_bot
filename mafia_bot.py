@@ -13,21 +13,25 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Men 𝐋𝐮𝐧𝐚𝐫𝐋𝐞𝐠𝐚𝐜𝐲 𝐌𝐚𝐟𝐢𝐚 guruhining 🤵🏻 Mafia o'yini botiman."
     )
 
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                "O'yinni guruhingizga qo'shing 🌚",
-                url=f"https://t.me/{context.bot.username}?startgroup=true"
-            )
-        ],
-        [
-            InlineKeyboardButton("Premium guruhlar 💎", callback_data="premium"),
-            InlineKeyboardButton("Yangiliklar 🔜", callback_data="news")
-        ],
-        [
-            InlineKeyboardButton("O'yin qoidalari 🔈", callback_data="rules")
-        ]
+   keyboard = [
+    [
+        InlineKeyboardButton(
+            "O'yinni guruhingizga qo'shing 🌚",
+            url=f"https://t.me/{context.bot.username}?startgroup=true"
+        )
+    ],
+    [
+        InlineKeyboardButton("Premium guruhlar 💎", callback_data="premium"),
+        InlineKeyboardButton(
+            "Yangiliklar 🔜",
+            url="https://t.me/LLMMafiaOfficial"
+        )
+    ],
+    [
+        InlineKeyboardButton("O'yin qoidalari 🔈", callback_data="rules")
     ]
+]
+
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -45,15 +49,6 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "• Tezkor o‘yin\n"
             "• Reklamasiz\n\n"
             "Tez orada! 🚀"
-        )
-
-    elif query.data == "news":
-        await query.message.reply_text(
-            "🔜 Yangiliklar:\n\n"
-            "• Kecha/Kun tizimi\n"
-            "• Ovoz berish\n"
-            "• Statistikalar\n\n"
-            "Yaqinda chiqadi!"
         )
 
     elif query.data == "rules":
