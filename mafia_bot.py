@@ -13,28 +13,26 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Men 𝐋𝐮𝐧𝐚𝐫𝐋𝐞𝐠𝐚𝐜𝐲 𝐌𝐚𝐟𝐢𝐚 guruhining 🤵🏻 Mafia o'yini botiman."
     )
 
-   keyboard = [
-    [
-        InlineKeyboardButton(
-            "O'yinni guruhingizga qo'shing 🌚",
-            url=f"https://t.me/{context.bot.username}?startgroup=true"
-        )
-    ],
-    [
-        InlineKeyboardButton("Premium guruhlar 💎", callback_data="premium"),
-        InlineKeyboardButton(
-            "Yangiliklar 🔜",
-            url="https://t.me/LLMMafiaOfficial"
-        )
-    ],
-    [
-        InlineKeyboardButton("O'yin qoidalari 🔈", callback_data="rules")
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "O'yinni guruhingizga qo'shing 🌚",
+                url=f"https://t.me/{context.bot.username}?startgroup=true"
+            )
+        ],
+        [
+            InlineKeyboardButton("Premium guruhlar 💎", callback_data="premium"),
+            InlineKeyboardButton(
+                "Yangiliklar 🔜",
+                url="https://t.me/LLMMafiaOfficial"
+            )
+        ],
+        [
+            InlineKeyboardButton("O'yin qoidalari 🔈", callback_data="rules")
+        ]
     ]
-]
-
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-
     await update.message.reply_text(text, reply_markup=reply_markup)
 
 # Tugmalar bosilganda ishlaydi
