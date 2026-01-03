@@ -6,8 +6,9 @@ TOKEN = os.getenv("BOT_TOKEN")
 if not TOKEN:
     raise ValueError("BOT_TOKEN topilmadi!")
 
-bot_ready_chats = set()  # qaysi guruhlar tayyor
-game_players = {}        # {chat_id: [list of user full names]}
+bot_ready_chats = set()   # qaysi guruhlar tayyor
+game_players = {}         # {chat_id: [list of user full names]}
+game_messages = {}        # {chat_id: message_id}  guruhdagi "Ro'yxatdan o'tish boshlandi ⚡️" xabar IDsi
 
 # /start komandasi
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -53,7 +54,9 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = query.message.chat.id
 
     if query.data == "premium":
-        await query.message.reply_text("💎 Premium guruhlar:\n• Ko‘proq rollar\n• Tezkor o‘yin\n• Reklamasiz\nTez orada! 🚀")
+        await query.message.reply_text(
+            "💎 Premium guruhlar:\n• Ko‘proq rollar\n• Tezkor o‘yin\n• Reklamasiz\nTez orada! 🚀"
+        )
     elif query.data == "rules":
         await query.message.reply_text(
             "🔈 Mafia o‘yini qoidalari:\n"
@@ -71,14 +74,36 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
         bot_ready_chats.add(chat_id)
-        await query.message.reply_text("✅ Bot barcha huquqlarga ega!\n🎮 Endi o‘yinni boshlash mumkin.\n\n👉 /newgame")
+        await query.message.reply_text(
+            "✅ Bot barcha huquqlarga ega!\n🎮 Endi o‘yinni boshlash mumkin.\n\n👉 /newgame"
+        )
     elif query.data == "join_game":
         user = query.from_user
-        full_name = user.full_name  # Bu foydalanuvchi ismi va familiyasi
+        full_name = user.full_name
         players = game_players.get(chat_id, [])
+
         if full_name not in players:
             players.append(full_name)
         game_players[chat_id] = players
+
+        # Guruhdagi "Ro'yxatdan o'tish boshlandi ⚡️" xabarini yangilash
+        message_id = game_messages.get(chat_id)
+        text = "Ro'yxatdan o'tish boshlandi ⚡️\n\n"
+        for u in players:
+            text += f"• {u}\n"
+        text += f"\nJami {len(players)} odam."
+        keyboard = [[InlineKeyboardButton("Qo'shilish 🤵🏻", callback_data="join_game")]]
+
+        if message_id:
+            try:
+                await context.bot.edit_message_text(
+                    chat_id=chat_id,
+                    message_id=message_id,
+                    text=text,
+                    reply_markup=InlineKeyboardMarkup(keyboard)
+                )
+            except:
+                pass
 
         # Foydalanuvchiga DM
         try:
@@ -86,19 +111,20 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id=user.id,
                 text="Siz o‘yinga omadli qo‘shildingiz 😊",
                 reply_markup=InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("Guruhga qaytish ⬅️", url=f"https://t.me/{update.effective_chat.username}")]]
+                    [[InlineKeyboardButton("Guruhga qaytish ⬅️", callback_data=f"back_to_group_{chat_id}")]]
                 )
             )
         except:
             await query.message.reply_text(f"⚠️ {full_name}, siz botni start qilmagan, DM yuborolmadim.")
 
-        # Guruhdagi xabarni yangilash
-        text = "Ro'yxatdan o'tish boshlandi ⚡️\n\n"
-        for u in players:
-            text += f"• {u}\n"
-        text += f"\nJami {len(players)} odam."
-        keyboard = [[InlineKeyboardButton("Qo'shilish 🤵🏻", callback_data="join_game")]]
-        await query.message.edit_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
+    elif query.data.startswith("back_to_group_"):
+        # DMdagi tugma bosilganda foydalanuvchini guruh xabariga olib keladi
+        gid = int(query.data.split("_")[-1])
+        msg_id = game_messages.get(gid)
+        if msg_id:
+            await query.message.edit_text("⬆️ Guruhdagi ro‘yxatni ko‘ring.")
+        else:
+            await query.message.edit_text("⚠️ Guruh topilmadi.")
 
 # Yangi o‘yin boshlash
 async def newgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -112,7 +138,8 @@ async def newgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     game_players[chat_id] = []
     text = "Ro'yxatdan o'tish boshlandi ⚡️"
     keyboard = [[InlineKeyboardButton("Qo'shilish 🤵🏻", callback_data="join_game")]]
-    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
+    msg = await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
+    game_messages[chat_id] = msg.message_id  # Guruhdagi xabar IDsi saqlanadi
 
 print("🤖 LunarLegacy Mafia bot ishga tushdi")
 
