@@ -112,13 +112,13 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def newgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
 
-    # eski buyruqni o'chiramiz
+    # Eski buyruqni o'chirish
     try:
         await update.message.delete()
     except:
         pass
 
-    # Guruh bot tayyorligini tekshirish
+    # Bot adminligini tekshiramiz
     if not await check_bot_permissions(chat_id, context):
         await update.message.reply_text(
             "❌ Bot hali to‘liq admin emas!\n"
@@ -131,15 +131,32 @@ async def newgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     bot_ready_chats.add(chat_id)
 
+    # Guruhdagi o‘yinchilarni tekshirish
     if chat_id not in game_participants:
         game_participants[chat_id] = {}
 
-    # eski pinni ochish
+    # Eski pinni ochish
     if chat_id in last_game_message:
         try:
             await context.bot.unpin_chat_message(chat_id)
         except:
             pass
+
+    # Join link
+    join_link = f"https://t.me/{context.bot.username}?start=game_{chat_id}"
+
+    # O‘yinni boshlash xabari
+    msg = await update.message.reply_text(
+        "Ro'yxatdan o'tish boshlandi ⚡️\n\nJami 0 ta odam.",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("Qo‘shilish 🤵🏻", url=join_link)]
+        ])
+    )
+
+    # Pin qilamiz
+    await context.bot.pin_chat_message(chat_id, msg.message_id, disable_notification=True)
+    last_game_message[chat_id] = msg.message_id
+
 
     # join link
     join_link = f"https://t.me/{context.bot.username}?start=game_{chat_id}"
