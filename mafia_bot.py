@@ -7,7 +7,7 @@ if not TOKEN:
     raise ValueError("BOT_TOKEN topilmadi!")
 
 bot_ready_chats = set()  # qaysi guruhlar tayyor
-game_players = {}        # {chat_id: [list of usernames]}
+game_players = {}        # {chat_id: [list of user full names]}
 
 # /start komandasi
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -74,9 +74,10 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.message.reply_text("✅ Bot barcha huquqlarga ega!\n🎮 Endi o‘yinni boshlash mumkin.\n\n👉 /newgame")
     elif query.data == "join_game":
         user = query.from_user
+        full_name = user.full_name  # Bu foydalanuvchi ismi va familiyasi
         players = game_players.get(chat_id, [])
-        if user.username not in players:
-            players.append(user.username)
+        if full_name not in players:
+            players.append(full_name)
         game_players[chat_id] = players
 
         # Foydalanuvchiga DM
@@ -85,17 +86,16 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id=user.id,
                 text="Siz o‘yinga omadli qo‘shildingiz 😊",
                 reply_markup=InlineKeyboardMarkup(
-                    [[InlineKeyboardButton("Guruhga qaytish ⬅️", url=f"t.me/{context.bot.username}?startgroup=true")]]
+                    [[InlineKeyboardButton("Guruhga qaytish ⬅️", url=f"https://t.me/{update.effective_chat.username}")]]
                 )
             )
         except:
-            # DM yuborilmasa (user botni start qilmagan)
-            await query.message.reply_text(f"⚠️ @{user.username}, siz botni start qilmagan, DM yuborolmadim.")
+            await query.message.reply_text(f"⚠️ {full_name}, siz botni start qilmagan, DM yuborolmadim.")
 
         # Guruhdagi xabarni yangilash
         text = "Ro'yxatdan o'tish boshlandi ⚡️\n\n"
         for u in players:
-            text += f"• @{u}\n"
+            text += f"• {u}\n"
         text += f"\nJami {len(players)} odam."
         keyboard = [[InlineKeyboardButton("Qo'shilish 🤵🏻", callback_data="join_game")]]
         await query.message.edit_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
