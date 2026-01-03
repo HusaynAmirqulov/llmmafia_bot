@@ -7,7 +7,7 @@ if not TOKEN:
     raise ValueError("BOT_TOKEN topilmadi!")
 
 bot_ready_chats = set()  # qaysi guruhlar tayyor
-game_participants = {}   # chat_id : set(usernames)
+game_participants = {}   # chat_id : {user_id: display_name}
 
 # /start komandasi
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -18,7 +18,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Salom! 👋\n"
             "Men 𝐋𝐮𝐧𝐚𝐫𝐋𝐞𝐠𝐚𝐜𝐲 𝐌𝐚𝐟𝐢𝐚 guruhining 🤵🏻 Mafia o'yini botiman."
         )
-
         keyboard = [
             [
                 InlineKeyboardButton(
@@ -37,12 +36,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 InlineKeyboardButton("O'yin qoidalari 🔈", callback_data="rules")
             ]
         ]
-
         await update.message.reply_text(
             text,
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
-
     else:
         text = (
             "Salom! 👋\n"
@@ -51,11 +48,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "☑️ O‘yinchilarni bloklash\n"
             "☑️ Xabarlarni pin qilish"
         )
-
         keyboard = [
             [InlineKeyboardButton("Tayyor :)", callback_data="ready")]
         ]
-
         await update.message.reply_text(
             text,
             reply_markup=InlineKeyboardMarkup(keyboard)
@@ -121,29 +116,34 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data.startswith("join_game_"):
         user = query.from_user
         if chat_id not in game_participants:
-            game_participants[chat_id] = set()
-        if user.username:
-            game_participants[chat_id].add(user.username)
-        else:
-            game_participants[chat_id].add(user.first_name)
+            game_participants[chat_id] = {}
 
-        # Foydalanuvchiga xabar yuborish
+        # Foydalanuvchi ismi
+        display_name = f"{user.first_name} {user.last_name or ''}".strip()
+        game_participants[chat_id][user.id] = display_name
+
+        # Foydalanuvchiga shaxsiy xabar
         await context.bot.send_message(
             chat_id=user.id,
             text="Siz o‘yinga omadli qo‘shildingiz 😊"
         )
 
         # Ro'yxatni yangilash
-        participant_list = "\n".join(game_participants[chat_id])
-        total = len(game_participants[chat_id])
-        join_keyboard = [
-            [InlineKeyboardButton("Qo'shilish 🤵🏻", callback_data=f"join_game_{chat_id}")]
+        participant_buttons = [
+            [InlineKeyboardButton(name, url=f"https://t.me/{user.username}") if user.username else InlineKeyboardButton(name, callback_data="dummy")]
+            for user_id, name in game_participants[chat_id].items()
         ]
+
+        # Qo‘shilish tugmasi
+        join_button = [InlineKeyboardButton("Qo'shilish 🤵🏻", callback_data=f"join_game_{chat_id}")]
+        participant_buttons.append(join_button)
+
+        total = len(game_participants[chat_id])
+
         await query.message.edit_text(
             f"Ro'yxatdan o'tish boshlandi ⚡️\n\n"
-            f"{participant_list}\n\n"
             f"Jami {total} odam.",
-            reply_markup=InlineKeyboardMarkup(join_keyboard)
+            reply_markup=InlineKeyboardMarkup(participant_buttons)
         )
 
 # Yangi o‘yin boshlash
@@ -158,8 +158,7 @@ async def newgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # Ro'yxatdan o'tish boshlash
-    game_participants[chat_id] = set()
+    game_participants[chat_id] = {}
     join_keyboard = [
         [InlineKeyboardButton("Qo'shilish 🤵🏻", callback_data=f"join_game_{chat_id}")]
     ]
