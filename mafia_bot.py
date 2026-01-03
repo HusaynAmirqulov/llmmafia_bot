@@ -118,9 +118,18 @@ async def newgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except:
         pass
 
-    if chat_id not in bot_ready_chats:
-        await update.message.reply_text("⛔ Bot hali tayyor emas!")
+    # Guruh bot tayyorligini tekshirish
+    if not await check_bot_permissions(chat_id, context):
+        await update.message.reply_text(
+            "❌ Bot hali to‘liq admin emas!\n"
+            "Iltimos, botga quyidagi huquqlarni bering:\n"
+            "☑️ Xabarlarni o‘chirish\n"
+            "☑️ O‘yinchilarni bloklash\n"
+            "☑️ Xabarlarni pin qilish"
+        )
         return
+
+    bot_ready_chats.add(chat_id)
 
     if chat_id not in game_participants:
         game_participants[chat_id] = {}
@@ -132,6 +141,7 @@ async def newgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except:
             pass
 
+    # join link
     join_link = f"https://t.me/{context.bot.username}?start=game_{chat_id}"
 
     msg = await update.message.reply_text(
