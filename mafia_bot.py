@@ -8,32 +8,58 @@ if not TOKEN:
 
 # /start komandasi
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = (
-        "Salom! 👋\n"
-        "Men 𝐋𝐮𝐧𝐚𝐫𝐋𝐞𝐠𝐚𝐜𝐲 𝐌𝐚𝐟𝐢𝐚 guruhining 🤵🏻 Mafia o'yini botiman."
-    )
+    chat_type = update.effective_chat.type
 
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                "O'yinni guruhingizga qo'shing 🌚",
-                url=f"https://t.me/{context.bot.username}?startgroup=true"
-            )
-        ],
-        [
-            InlineKeyboardButton("Premium guruhlar 💎", callback_data="premium"),
-            InlineKeyboardButton(
-                "Yangiliklar 🔜",
-                url="https://t.me/LLMMafiaOfficial"
-            )
-        ],
-        [
-            InlineKeyboardButton("O'yin qoidalari 🔈", callback_data="rules")
+    # 🔹 SHAXSIY CHAT
+    if chat_type == "private":
+        text = (
+            "Salom! 👋\n"
+            "Men 𝐋𝐮𝐧𝐚𝐫𝐋𝐞𝐠𝐚𝐜𝐲 𝐌𝐚𝐟𝐢𝐚 guruhining 🤵🏻 Mafia o'yini botiman."
+        )
+
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    "O'yinni guruhingizga qo'shing 🌚",
+                    url=f"https://t.me/{context.bot.username}?startgroup=true"
+                )
+            ],
+            [
+                InlineKeyboardButton("Premium guruhlar 💎", callback_data="premium"),
+                InlineKeyboardButton(
+                    "Yangiliklar 🔜",
+                    url="https://t.me/LLMMafiaOfficial"
+                )
+            ],
+            [
+                InlineKeyboardButton("O'yin qoidalari 🔈", callback_data="rules")
+            ]
         ]
-    ]
 
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(text, reply_markup=reply_markup)
+        await update.message.reply_text(
+            text,
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
+    # 🔹 GURUH / SUPERGROUP
+    else:
+        text = (
+            "Salom! 👋\n"
+            "Men 𝐋𝐮𝐧𝐚𝐫𝐋𝐞𝐠𝐚𝐜𝐲 𝐌𝐚𝐟𝐢𝐚 guruhining 🤵🏻 Mafia o'yini botiman.\n\n"
+            "☑️ Xabarlarni o‘chirish\n"
+            "☑️ O‘yinchilarni bloklash\n"
+            "☑️ Xabarlarni pin qilish"
+        )
+
+        keyboard = [
+            [InlineKeyboardButton("Tayyor :)", callback_data="ready")]
+        ]
+
+        await update.message.reply_text(
+            text,
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
 
 # Tugmalar bosilganda ishlaydi
 async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -57,6 +83,11 @@ async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "3️⃣ Kun davomida ovoz beriladi\n"
             "4️⃣ Mafia yoki Civil g‘alaba qozonadi"
         )
+    elif query.data == "ready":
+    await query.message.reply_text(
+        "✅ Bot guruhda ishlashga tayyor!\n"
+        "O‘yinni boshlash uchun /newgame buyrug‘idan foydalaning."
+    )
 
 print("🤖 LunarLegacy Mafia bot ishga tushdi")
 
