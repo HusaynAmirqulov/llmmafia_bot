@@ -1,75 +1,74 @@
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-import random
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 import os
 
 TOKEN = os.getenv("BOT_TOKEN")
 if not TOKEN:
-    raise ValueError("❌ BOT_TOKEN topilmadi!")
+    raise ValueError("BOT_TOKEN topilmadi!")
 
-players = {}
-roles = {}
-game_started = False
-night = False
-
+# /start komandasi
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🎮 Mafia botiga xush kelibsan!\n"
-        "/newgame — yangi o‘yin\n"
-        "/join — o‘yinga qo‘shilish\n"
-        "/startgame — o‘yinni boshlash\n"
-        "/myrole — rolingni bilish"
+    text = (
+        "Salom! 👋\n"
+        "Men 𝐋𝐮𝐧𝐚𝐫𝐋𝐞𝐠𝐚𝐜𝐲 𝐌𝐚𝐟𝐢𝐚 guruhining 🤵🏻 Mafia o'yini botiman."
     )
 
-async def newgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global players, roles, game_started
-    players = {}
-    roles = {}
-    game_started = False
-    await update.message.reply_text("🃏 Yangi Mafia o‘yini yaratildi!\n/join — qo‘shilish")
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "O'yinni guruhingizga qo'shing 🌚",
+                url=f"https://t.me/{context.bot.username}?startgroup=true"
+            )
+        ],
+        [
+            InlineKeyboardButton("Premium guruhlar 💎", callback_data="premium"),
+            InlineKeyboardButton("Yangiliklar 🔜", callback_data="news")
+        ],
+        [
+            InlineKeyboardButton("O'yin qoidalari 🔈", callback_data="rules")
+        ]
+    ]
 
-async def join(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if game_started:
-        return
-    user = update.effective_user
-    players[user.id] = user.first_name
-    await update.message.reply_text(f"🧍 {user.first_name} o‘yinga qo‘shildi!")
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
-async def startgame(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global game_started, night
-    if len(players) < 4:
-        await update.message.reply_text("❗ Kamida 4 o‘yinchi kerak!")
-        return
+    await update.message.reply_text(text, reply_markup=reply_markup)
 
-    game_started = True
-    night = True
-    assign_roles()
-    await update.message.reply_text("🌙 Kecha boshlandi...\nMafia uyg‘ondi!")
+# Tugmalar bosilganda ishlaydi
+async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
 
-def assign_roles():
-    ids = list(players.keys())
-    random.shuffle(ids)
-    roles[ids[0]] = "🕵️ Mafia"
-    roles[ids[1]] = "🧑‍⚕️ Doctor"
-    roles[ids[2]] = "👮 Sheriff"
-    for i in ids[3:]:
-        roles[i] = "🙂 Civil"
+    if query.data == "premium":
+        await query.message.reply_text(
+            "💎 Premium guruhlar:\n\n"
+            "• Ko‘proq rollar\n"
+            "• Tezkor o‘yin\n"
+            "• Reklamasiz\n\n"
+            "Tez orada! 🚀"
+        )
 
-async def myrole(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    role = roles.get(user_id)
-    if role:
-        await update.message.reply_text(f"🎭 Sening roling: {role}")
-    else:
-        await update.message.reply_text("❌ Sen hali o‘yinga qo‘shilmagansan.")
+    elif query.data == "news":
+        await query.message.reply_text(
+            "🔜 Yangiliklar:\n\n"
+            "• Kecha/Kun tizimi\n"
+            "• Ovoz berish\n"
+            "• Statistikalar\n\n"
+            "Yaqinda chiqadi!"
+        )
 
-print("🤖 Mafia bot ishga tushdi")
+    elif query.data == "rules":
+        await query.message.reply_text(
+            "🔈 Mafia o‘yini qoidalari:\n\n"
+            "1️⃣ O‘yinchilar rollarga bo‘linadi\n"
+            "2️⃣ Mafia yashirincha harakat qiladi\n"
+            "3️⃣ Kun davomida ovoz beriladi\n"
+            "4️⃣ Mafia yoki Civil g‘alaba qozonadi"
+        )
+
+print("🤖 LunarLegacy Mafia bot ishga tushdi")
 
 app = ApplicationBuilder().token(TOKEN).build()
 app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("newgame", newgame))
-app.add_handler(CommandHandler("join", join))
-app.add_handler(CommandHandler("startgame", startgame))
-app.add_handler(CommandHandler("myrole", myrole))
+app.add_handler(CallbackQueryHandler(buttons))
 
 app.run_polling()
